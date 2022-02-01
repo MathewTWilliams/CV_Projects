@@ -19,6 +19,7 @@ window.onload = function init()
      // Three Vertices        
 
     var vertices = [
+        // Edit made here
         vec2( -0.5, -0.5 ),
         vec2(  0,  0.5 ),
         vec2(  0.5, -0.5 )    
