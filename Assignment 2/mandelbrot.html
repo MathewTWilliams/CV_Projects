@@ -1,46 +1,94 @@
 
+<!DOCTYPE html>
+<!--Prof R Computer Vision Mandelbrot Set-->
+<!--Edited by Matt Williams-->
+<html>
+<head>
+    <title>Mendelbrot Set WebGL</title>
+    <!------------------>
+    <!-- Vertex Shader -->
+    <!------------------>
+    <script id="vertex-shader" type = "x-shader/x-vertex">
+        #version 300 es
+        in vec2 vPosition; 
+        uniform mat4 P; 
+
+        void main() 
+        {
+            gl_Position = P * vec4(vPosition, 0, 1);
+        }
+
+    </script>
 
 
-<script id="fragment-shader" type = "x-shader/x-fragment"> 
-    precision highp float; 
+    <!-------------------->
+    <!-- Fragment Shader -->
+    <!-------------------->
+    <script id="fragment-shader" type = "x-shader/x-fragment"> 
+        #version 300 es
+        precision highp float; 
 
-    uniform vec2 viewportDimensions; 
-    uniform float left; 
-    uniform float right; 
-    uniform float bottom; 
-    uniform float topBound; 
+        uniform vec2 viewportDimensions; 
+        uniform float left; 
+        uniform float right; 
+        uniform float bottom; 
+        uniform float topBound; 
+
+        out vec4 fColor; 
 
 
-    void main()
-    {
-        // [0,1280] -> [-2.0, 2.0] and [0, 720] -> [-2.0, 2.0]
-        float a = gl_FragCoord.x / viewportDimensions.x; 
-        float b = gl_FragCoord.y / viewportDimensions.y; 
-        vec2 c = vec2(left + a * (right-left), bottom + b * (topBound - bottom));
+        void main()
+        {
 
-        // Mandelbrot formula
-        vec2 z = c; 
-        float iterations = 0.0; 
-        float maxIterations = 2000.0; 
-        const int imaxIterations = 2000; 
+            // [0,1280] -> [-2.0, 2.0] for x and [0, 720] -> [-2.0, 2.0] for y
+            float a = gl_FragCoord.x / viewportDimensions.x; 
+            float b = gl_FragCoord.y / viewportDimensions.y; 
+            vec2 c = vec2(left + a * (right-left), bottom + b * (topBound - bottom));
 
-        for (int i = 0; i < imaxIterations; i++) {
-            // use temp variable t, so we don't overwrite z.y
-            float t = 2.0 * z.x * z.y + c.y     // imaginary = (z.x * z.y + z.x + z.y) + c.y
-            z.x = z.x * z.x - z.y * z.y + c.x;  // real = z.x * z.x - z.y * z.y + c.x 
-            z.y = t;                            // now set z.y 
+            // Mandelbrot formula
+            vec2 z = c; 
+            float iterations = 0.0; 
+            float maxIterations = 2000.0; 
+            const int imaxIterations = 2000; 
 
-            if(z.x * z.x + z.y * z.y > 4.0) {
-                break;
+            for (int i = 0; i < imaxIterations; i++) {
+                // use temp variable t, so we don't overwrite z.y
+                float t = 2.0 * z.x * z.y + c.y;     // imaginary = (z.x * z.y + z.x * z.y) + c.y
+                z.x = z.x * z.x - z.y * z.y + c.x;  // real = (z.x * z.x - z.y * z.y) + c.x 
+                z.y = t;                            // now set z.y 
+
+                if(z.x * z.x + z.y * z.y > 4.0) {
+                    break;
+                }
+
+                iterations += 1.0; 
+            }   
+
+            if (iterations < maxIterations) {
+                fColor = vec4(1.0, 0.0, 0.0, 1.0); // Not in Mandelbrot set
             }
-
-            iterations += 1.0; 
-        }   
-
-        if (iterations < maxIterations) {
-            fColor = vec4(1.0, 1.0, 1.0, 1.0); // Not in Mandelbrot set
+            else {
+                fColor = vec4(0.0, 0.0, 1.0, 1.0); // In Mandelbrot set color blue
+            }
         }
-        else {
-            fColor = vec4(0.0, 0.0, 1.0, 1.0); // In Mandelbrot set color blue
-        }
-    }
+    </script>
+    <!-------------------->
+    <!-- JS files        -->
+    <!-------------------->
+    <script type="text/javascript" src="../Common/initShaders.js"></script>
+    <script type="text/javascript" src="../Common/MVnew.js"></script>
+    <script type="text/javascript" src="mandelbrot.js"></script>
+</head>
+
+<!--------------------->
+<!-- Canvas           -->
+<!--------------------->
+<body>
+    <h1><center>Mandelbrot Set</center></h1>
+    <canvas id="gl-canvas" width="2560" height="1440"><center>
+        <!---- Set canvas to be 720p -->
+        Opps ... your browser doesn't support the HTML5 canvas element
+    </center></canvas>
+</body>
+
+</html>
