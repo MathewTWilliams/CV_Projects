@@ -86,16 +86,16 @@ function dealWithKeyboard(e) {
             }
             break;
         case 37: // left arrow pan left
-            {left += -0.1; right += -0.1};
+            {left += -0.1; right += -0.1;};
             break;
         case 38: // up arrow pan left
-            {bottom += 0.1; topBound += 0.1};
+            {bottom += 0.1; topBound += 0.1;};
             break;
         case 39: // right arrow pan left
-            {left += 0.1; right += 0.1};
+            {left += 0.1; right += 0.1;};
             break;
         case 40: // down arrow pan left
-            {bottom += -0.1; topBound += -0.1};
+            {bottom += -0.1; topBound += -0.1;};
             break;
 
     }
