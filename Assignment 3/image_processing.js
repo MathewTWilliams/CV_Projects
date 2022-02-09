@@ -16,6 +16,9 @@ var near = -10;                 //near clip plane
 var far = 10;                   //far clip plane
 
 
+var min_filter_option;
+var mag_filter_option; 
+
 
 window.onload = function init()
 {
@@ -27,6 +30,9 @@ window.onload = function init()
     aspect = canvas.width / canvas.height;    // Get aspect ratio
     left *= aspect; 
     right *= aspect; 
+
+    min_filter_option = gl.NEAREST_MIPMAP_LINEAR;
+    mag_filter_option = gl.NEAREST; 
 
 
     // Vertices of two triangles 
@@ -95,6 +101,65 @@ document.getElementById("Brightness").onchange = function () {
     brightness = (event.srcElement.value / 128) * 0.5; 
 };
 
+
+//Call back functions for our buttons for Minification
+document.getElementById("Mini_Nearest").onclick = function() {
+    if(min_filter_option != gl.NEAREST){
+        min_filter_option = gl.NEAREST; 
+        change_current_text("Mini", "Nearest-neighbor"); 
+        
+    }
+}
+
+document.getElementById("Mini_Linear").onclick = function() {
+    if(min_filter_option != gl.LINEAR){
+        min_filter_option = gl.LINEAR; 
+        change_current_text("Mini", "Linear Interpolation"); 
+        
+    }
+}
+
+document.getElementById("Mini_Mip_Nearest").onclick = function() {
+    if(min_filter_option != gl.NEAREST_MIPMAP_NEAREST){
+        min_filter_option = gl.NEAREST_MIPMAP_NEAREST; 
+        change_current_text("Mini", "Nearest-neight mipmapped"); 
+        
+    }
+}
+
+
+document.getElementById("Mini_Mip_Linear").onclick = function() {
+    if(min_filter_option != gl.NEAREST_MIPMAP_LINEAR){
+        min_filter_option = gl.NEAREST_MIPMAP_LINEAR; 
+        change_current_text("Mini", "Linear interpolation mipmaps"); 
+        
+    }
+}
+
+
+//Call back functions for our buttons for  Magnification
+document.getElementById("Mag_Nearest").onclick = function() {
+    if(mag_filter_option != gl.NEAREST){
+        mag_filter_option = gl.NEAREST; 
+        change_current_text("Mag", "Nearest-neighbor"); 
+        
+    }
+}
+
+
+document.getElementById("Mag_Linear").onclick = function() {
+    if(mag_filter_option != gl.LINEAR){
+        mag_filter_option = gl.LINEAR; 
+        change_current_text("Mag", "Linear Interpolation"); 
+        
+    }
+}
+
+function change_current_text(min_or_mag, chosen_option)
+{
+    document.getElementById( min_or_mag + "_Current").innerHTML = "Currently chosen: " + chosen_option; 
+}
+
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT);                  //Clear viewport with gl.clearColor defined above
 
@@ -125,8 +190,8 @@ function configureTexture(image) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image); 
 
     gl.generateMipmap(gl.TEXTURE_2D); 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); 
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, min_filter_option);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, mag_filter_option); 
 
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0); 
 }

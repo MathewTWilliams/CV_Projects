@@ -6,13 +6,30 @@
 
 <html>
     <head>
-        <p> </p>
+        <h3><b> Warmth and Brighness</b></h3>
         <div>
             Warmth - 2 <input id="Warmth" type="range" min="-128" max="128" step="1" value="0" /> 2
         </div>
         <div>
             Brightness - 2 <input id="Brightness" type="range" min="-128" max="128" step="1" value="0" /> 2
         </div>
+
+        <h3><b>Minification texture filtering options</b></h3>
+        <p id = "Mini_Current"> Currently chosen: Nearest-neightbor mipmapped </p>
+
+        <button id="Mini_Nearest">Nearest-neighbor filtering</button> 
+        <button id="Mini_Linear">Linear interpolation filtering</button>
+        <button id="Mini_Mip_Nearest">Nearest-neighbor mipmapped filtering</button>
+        <button id="Mini_Mip_Linear"> Linear interpolated mipmaps filtering</button>
+
+        <p></p>
+        <h3><b>Magnification texture filtering options</b></h3>
+        <p id = "Mag_Current">Currently chosen: Nearest-neighbor</p>
+
+        <button id="Mag_Nearest">Nearest-neighbor filtering</button> 
+        <button id="Mag_Linear">Linear interpolation filtering</button>
+
+        <p></p>
 
 
         <script id="vertex-shader" type="x-shader/x-vertex">
