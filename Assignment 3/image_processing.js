@@ -1,12 +1,17 @@
 // Prof R CV lect 6, Image Processing
-// Editied by Matt Williams
+// Edited by Matt Williams
 
 var gl; 
 var program; 
 var canvas; 
 var aspect; 
+
 var warmth = 0.0;
 var brightness = 0.0; 
+var invert = 1;                 // if invert is 1, then don't invert
+var contrast = 1.0;             // contrast multiplier
+var nl_contrast = 1.0;          // nl_contrast exponent
+var is_color = 1;               // if is_color is 1, show colored picture
 
 var left = -2;                  //left limit of world coords
 var right = 2;                  //right limit of world coords
@@ -16,8 +21,6 @@ var near = -10;                 //near clip plane
 var far = 10;                   //far clip plane
 
 
-var min_filter_option;
-var mag_filter_option; 
 
 
 window.onload = function init()
@@ -31,11 +34,10 @@ window.onload = function init()
     left *= aspect; 
     right *= aspect; 
 
-    min_filter_option = gl.NEAREST_MIPMAP_LINEAR;
-    mag_filter_option = gl.NEAREST; 
 
 
     // Vertices of two triangles 
+    //1.942 is the aspect ratio of the photo
     var vertices = [
         vec2(-2.0 * 1.942, 2.0),
         vec2(-2.0 * 1.942,-2.0),
@@ -91,68 +93,124 @@ window.onload = function init()
 
 };
 
-// Two callback functions for 2 sliders, one for warmth and 1 for brightness
-document.getElementById("Warmth").onchange = function () {
-    warmth = (event.srcElement.value / 128) * 0.5; 
+
+window.addEventListener("keydown", dealWithKeyboard, false); 
+
+function dealWithKeyboard(e) {
+    switch(e.keyCode) {
+
+        case 33: // PageUp key , Zoom in
+            {
+                var range = (right - left);
+                var delta = (range - range * 0.9) * 0.5;
+                left += delta; right -= delta;
+                range = topBound - bottom;
+                delta = (range - range * 0.9) * 0.5;
+                bottom += delta; topBound -= delta;
+            }
+            break;
+        case 34: // PageDown key, zoom out
+            {
+                var range = (right - left);
+                var delta = (range * 1.1 - range) * 0.5;
+                left -= delta; right += delta;
+                range = topBound - bottom;
+                delta = (range * 1.1 - range) * 0.5;
+                bottom -= delta; topBound += delta;
+            }
+            break;
+        case 37: // left arrow pan left
+            {left += -0.1; right += -0.1;};
+            break;
+        case 38: // up arrow pan left
+            {bottom += 0.1; topBound += 0.1;};
+            break;
+        case 39: // right arrow pan left
+            {left += 0.1; right += 0.1;};
+            break;
+        case 40: // down arrow pan left
+            {bottom += -0.1; topBound += -0.1;};
+            break;
+
+    }
+}
+
+
+document.getElementById("Warmth").oninput = function () {
+    warmth = (event.srcElement.value / 128) * 0.5;
+    
 };
 
 
-document.getElementById("Brightness").onchange = function () {
+document.getElementById("Brightness").oninput = function () {
     brightness = (event.srcElement.value / 128) * 0.5; 
+     
+};
+
+document.getElementById("Invert").onchange = function () {
+     if(event.srcElement.checked == true) {
+         invert = -1; 
+     }
+
+     else{
+         invert = 1; 
+     }
+     
+};
+
+document.getElementById("Contrast").oninput = function () {
+    contrast = event.srcElement.value; 
+     
+};
+
+document.getElementById("NL_Contrast").oninput = function () {
+    nl_contrast = event.srcElement.value; 
+     
+};
+
+document.getElementById("Toggle_Color").onclick = function () {
+    is_color *= -1; 
+  
+    
 };
 
 
 //Call back functions for our buttons for Minification
 document.getElementById("Mini_Nearest").onclick = function() {
-    if(min_filter_option != gl.NEAREST){
-        min_filter_option = gl.NEAREST; 
-        change_current_text("Mini", "Nearest-neighbor"); 
-        
-    }
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    change_current_text("Mini", "Nearest-neighbor"); 
 }
 
 document.getElementById("Mini_Linear").onclick = function() {
-    if(min_filter_option != gl.LINEAR){
-        min_filter_option = gl.LINEAR; 
-        change_current_text("Mini", "Linear Interpolation"); 
-        
-    }
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    change_current_text("Mini", "Linear Interpolation"); 
 }
 
 document.getElementById("Mini_Mip_Nearest").onclick = function() {
-    if(min_filter_option != gl.NEAREST_MIPMAP_NEAREST){
-        min_filter_option = gl.NEAREST_MIPMAP_NEAREST; 
-        change_current_text("Mini", "Nearest-neight mipmapped"); 
-        
-    }
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+    change_current_text("Mini", "Nearest-neighbor mipmapped"); 
 }
 
 
 document.getElementById("Mini_Mip_Linear").onclick = function() {
-    if(min_filter_option != gl.NEAREST_MIPMAP_LINEAR){
-        min_filter_option = gl.NEAREST_MIPMAP_LINEAR; 
-        change_current_text("Mini", "Linear interpolation mipmaps"); 
-        
-    }
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+    change_current_text("Mini", "Linear interpolation mipmaps"); 
 }
 
 
 //Call back functions for our buttons for  Magnification
 document.getElementById("Mag_Nearest").onclick = function() {
-    if(mag_filter_option != gl.NEAREST){
-        mag_filter_option = gl.NEAREST; 
-        change_current_text("Mag", "Nearest-neighbor"); 
-        
-    }
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    change_current_text("Mag", "Nearest-neighbor"); 
 }
 
 
 document.getElementById("Mag_Linear").onclick = function() {
-    if(mag_filter_option != gl.LINEAR){
-        mag_filter_option = gl.LINEAR; 
-        change_current_text("Mag", "Linear Interpolation"); 
-        
-    }
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    change_current_text("Mag", "Linear Interpolation"); 
 }
 
 function change_current_text(min_or_mag, chosen_option)
@@ -170,10 +228,19 @@ function render() {
 
     var brightnessLoc = gl.getUniformLocation(program, 'brightness'); 
     var warmthLoc = gl.getUniformLocation(program, "warmth"); 
+    var invertLoc = gl.getUniformLocation(program, "invert");
+    var contrastLoc = gl.getUniformLocation(program, "contrast");
+    var nl_contrastLoc = gl.getUniformLocation(program, 'nl_contrast'); 
+    var is_colorLoc = gl.getUniformLocation(program, "is_color"); 
 
     // Get uniform locations
     gl.uniform1f(brightnessLoc, brightness);
     gl.uniform1f(warmthLoc, warmth);
+    gl.uniform1i(invertLoc, invert);
+    gl.uniform1f(contrastLoc, contrast); 
+    gl.uniform1f(nl_contrastLoc, nl_contrast); 
+    gl.uniform1i(is_colorLoc, is_color);
+
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);              //Draw two triangles using the TRIANGLES primitive using 6 vertices
 
@@ -190,8 +257,8 @@ function configureTexture(image) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image); 
 
     gl.generateMipmap(gl.TEXTURE_2D); 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, min_filter_option);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, mag_filter_option); 
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); 
 
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0); 
 }

@@ -6,12 +6,22 @@
 
 <html>
     <head>
-        <h3><b> Warmth and Brighness</b></h3>
+        <h3><b> Point Processing Methods</b></h3>
         <div>
-            Warmth - 2 <input id="Warmth" type="range" min="-128" max="128" step="1" value="0" /> 2
+            Warmth -2 <input id="Warmth" type="range" min="-128" max="128" step="1" value="0" /> 2
         </div>
         <div>
-            Brightness - 2 <input id="Brightness" type="range" min="-128" max="128" step="1" value="0" /> 2
+            Brightness -2 <input id="Brightness" type="range" min="-128" max="128" step="1" value="0" /> 2
+        </div>
+        <div>
+            Contrast -2 <input id="Contrast" type ="range" min ="0.5" max ="2" step ="0.1" value="1" /> 2
+        </div>
+        <div>
+            Non-Linear Contrast -2 <input id="NL_Contrast" type = "range" min = "0.33" max = "2" step = "0.01" value = 1 /> 2
+        </div>
+        <div>
+            <input id = "Invert" type = "checkbox" value="Invert">
+            <label for = "Invert"> Invert colors? </label> 
         </div>
 
         <h3><b>Minification texture filtering options</b></h3>
@@ -28,6 +38,10 @@
 
         <button id="Mag_Nearest">Nearest-neighbor filtering</button> 
         <button id="Mag_Linear">Linear interpolation filtering</button>
+
+        <p></p>
+        <h3>Other </h3>
+        <button id="Toggle_Color">Toggle Color/Black&White</button>
 
         <p></p>
 
@@ -57,16 +71,40 @@
 
             uniform sampler2D texMap; 
             uniform float warmth; 
-            uniform float brightness; 
+            uniform float brightness;
+            uniform int invert; 
+            uniform int is_color; 
+            uniform float contrast;
+            uniform float nl_contrast; 
 
             void main()
             {
                 vec4 color = texture(texMap, fTexCoord); //Note texture2d is deprecated in webGL 2.0
 
-                color.r += warmth;
-                color.b -= warmth; 
+
+                if(is_color == -1) {
+                    float i = (color.r + color.g + color.b) / 3.0; 
+                    color.rbg = vec3(i,i,i); 
+
+                }
+                else {                
+                    color.r += warmth;
+                    color.b -= warmth; 
+                    
+                    color.rgb += brightness; 
+
+                    color.rgb *= contrast;
+                    
+                    color.r = pow(color.r, nl_contrast);
+                    color.g = pow(color.g, nl_contrast);
+                    color.b = pow(color.b, nl_contrast); 
                 
-                color.rgb += brightness; 
+                    if(invert == -1) {
+                        color.r = 1.0 - color.r; 
+                        color.g = 1.0 - color.g; 
+                        color.b = 1.0 - color.b; 
+                    }
+                }
                 fColor = color; 
             }
         </script>
