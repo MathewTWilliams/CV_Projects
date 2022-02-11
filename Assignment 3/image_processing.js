@@ -12,6 +12,7 @@ var invert = 1;                 // if invert is 1, then don't invert
 var contrast = 1.0;             // contrast multiplier
 var nl_contrast = 1.0;          // nl_contrast exponent
 var is_color = 1;               // if is_color is 1, show colored picture
+var smooth = -1;              // -1 means smoothing filtering is off
 
 var left = -2;                  //left limit of world coords
 var right = 2;                  //right limit of world coords
@@ -158,6 +159,16 @@ document.getElementById("Invert").onchange = function () {
      
 };
 
+document.getElementById("Smooth").onchange = function () {
+    if(event.srcElement.checked == true){
+        smooth = 1; 
+    } 
+    else 
+    {
+        smooth = -1; 
+    }
+}
+
 document.getElementById("Contrast").oninput = function () {
     contrast = event.srcElement.value; 
      
@@ -232,6 +243,7 @@ function render() {
     var contrastLoc = gl.getUniformLocation(program, "contrast");
     var nl_contrastLoc = gl.getUniformLocation(program, 'nl_contrast'); 
     var is_colorLoc = gl.getUniformLocation(program, "is_color"); 
+    var smoothLoc = gl.getUniformLocation(program, "smoothing"); 
 
     // Get uniform locations
     gl.uniform1f(brightnessLoc, brightness);
@@ -240,6 +252,7 @@ function render() {
     gl.uniform1f(contrastLoc, contrast); 
     gl.uniform1f(nl_contrastLoc, nl_contrast); 
     gl.uniform1i(is_colorLoc, is_color);
+    gl.uniform1i(smoothLoc, smooth);    
 
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);              //Draw two triangles using the TRIANGLES primitive using 6 vertices

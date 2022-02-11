@@ -23,6 +23,10 @@
             <input id = "Invert" type = "checkbox" value="Invert">
             <label for = "Invert"> Invert colors? </label> 
         </div>
+        <div>
+            <input id = "Smooth" type = "checkbox" value = "Smooth">
+            <label for = "Smooth">Turn on Smoothing Filter?</label>
+        </div>
 
         <h3><b>Minification texture filtering options</b></h3>
         <p id = "Mini_Current"> Currently chosen: Nearest-neightbor mipmapped </p>
@@ -76,35 +80,62 @@
             uniform int is_color; 
             uniform float contrast;
             uniform float nl_contrast; 
-
+            uniform int smoothing;
+            
             void main()
             {
                 vec4 color = texture(texMap, fTexCoord); //Note texture2d is deprecated in webGL 2.0
-
-
-                if(is_color == -1) {
-                    float i = (color.r + color.g + color.b) / 3.0; 
-                    color.rbg = vec3(i,i,i); 
-
-                }
-                else {                
-                    color.r += warmth;
-                    color.b -= warmth; 
-                    
-                    color.rgb += brightness; 
-
-                    color.rgb *= contrast;
-                    
-                    color.r = pow(color.r, nl_contrast);
-                    color.g = pow(color.g, nl_contrast);
-                    color.b = pow(color.b, nl_contrast); 
                 
-                    if(invert == -1) {
-                        color.r = 1.0 - color.r; 
-                        color.g = 1.0 - color.g; 
-                        color.b = 1.0 - color.b; 
-                    }
+                /*************************/
+                // Smoothing related work
+                /**************************/
+                ivec2 texSize = textureSize(texMap, 0); 
+                vec2 onePixel = vec2(1.0/float(texSize.x), 1.0/float(texSize.y)); 
+
+                vec4 colorSum = color + 
+                    texture(texMap, fTexCoord + onePixel * vec2(0, 1)) + 
+                    texture(texMap, fTexCoord + onePixel * vec2(0, -1)) + 
+                    texture(texMap, fTexCoord + onePixel * vec2(1, 0)) + 
+                    texture(texMap, fTexCoord + onePixel * vec2(-1, 0)) + 
+                    texture(texMap, fTexCoord + onePixel * vec2(1, 1)) + 
+                    texture(texMap, fTexCoord + onePixel * vec2(1, -1)) + 
+                    texture(texMap, fTexCoord + onePixel * vec2(-1, 1)) + 
+                    texture(texMap, fTexCoord + onePixel * vec2(-1, -1));
+                colorSum.rgb /= 9.0;
+
+                /***********************/
+                //black&white image work
+                /**********************/
+                float i = (color.r + color.g + color.b) / 3.0; 
+
+
+                /************************/
+                // Point Processing work
+                /***********************/
+                color.r += warmth;
+                color.b -= warmth; 
+                
+                color.rgb += brightness; 
+
+                color.rgb *= contrast;
+                
+                color.r = pow(color.r, nl_contrast);
+                color.g = pow(color.g, nl_contrast);
+                color.b = pow(color.b, nl_contrast); 
+            
+                if(invert == -1) {
+                    color.r = 1.0 - color.r; 
+                    color.g = 1.0 - color.g; 
+                    color.b = 1.0 - color.b; 
                 }
+
+                if(smoothing == 1) {
+                    color = colorSum; 
+                }
+                else if(is_color == -1) {
+                    color.rbg = vec3(i,i,i); 
+                }
+
                 fColor = color; 
             }
         </script>
