@@ -20,12 +20,21 @@
             Non-Linear Contrast -2 <input id="NL_Contrast" type = "range" min = "0.33" max = "2" step = "0.01" value = 1 /> 2
         </div>
         <div>
-            <input id = "Invert" type = "checkbox" value="Invert">
+            <input id = "Invert" type = "checkbox" value="Invert"/>
             <label for = "Invert"> Invert colors? </label> 
         </div>
         <div>
-            <input id = "Smooth" type = "checkbox" value = "Smooth">
-            <label for = "Smooth">Turn on Smoothing Filter?</label>
+            <input id = "Blur" type = "checkbox" value = "Blue"/>
+            <label for = "Blur">Turn on Blur Filter?</label>
+        </div>
+        <div>
+            <input id="Toggle_Color" type = "checkbox"/>
+            <label for ="Toggle_Color">Make Black & White? </label>
+
+            <h3>Notes:</h3>
+            <p>Having either Blur or Toggle Color checked will result in almost no point processing being done.</p>
+            <p>However, inversion of colors is still possible on both options.</p>
+            <p>Having both Blur and Toggle checked at the same time will result in Blur occuring.</p>
         </div>
 
         <h3><b>Minification texture filtering options</b></h3>
@@ -44,12 +53,6 @@
         <button id="Mag_Linear">Linear interpolation filtering</button>
 
         <p></p>
-        <h3>Other </h3>
-        <button id="Toggle_Color">Toggle Color/Black&White</button>
-
-        <p></p>
-
-
         <script id="vertex-shader" type="x-shader/x-vertex">
             #version 300 es
             
@@ -80,7 +83,7 @@
             uniform int is_color; 
             uniform float contrast;
             uniform float nl_contrast; 
-            uniform int smoothing;
+            uniform int blur;
             
             void main()
             {
@@ -123,17 +126,19 @@
                 color.g = pow(color.g, nl_contrast);
                 color.b = pow(color.b, nl_contrast); 
             
+
+                if(blur == 1) {
+                    color = colorSum; 
+                }
+
+                else if(is_color == -1) {
+                    color.rbg = vec3(i,i,i); 
+                }
+
                 if(invert == -1) {
                     color.r = 1.0 - color.r; 
                     color.g = 1.0 - color.g; 
                     color.b = 1.0 - color.b; 
-                }
-
-                if(smoothing == 1) {
-                    color = colorSum; 
-                }
-                else if(is_color == -1) {
-                    color.rbg = vec3(i,i,i); 
                 }
 
                 fColor = color; 
