@@ -15,6 +15,7 @@ var kernel = mat3();
 var filter = "normal"; 
 var seg_thresh = -1;        // -1 means don't apply segmentation thresholding
 
+
 var left = -2;              // left limit of world coords
 var right = 2;              // right limit of world coords 
 var bottom = -2;            // bottom limit of world coords
@@ -120,11 +121,40 @@ m.addEventListener("click", function() {
             filter = "boxBlur";
             break;
         }
-
         case 2: { 
             dimAndKernelWeight[2] = 1.0; 
             filter = "triangleBlur"; 
-            break
+            break;
+        }
+        case 3: {
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "fourNeighborEdge"; 
+            break;
+        }
+        case 4: {
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "sharpenX2"; 
+            break;
+        }
+        case 5: {
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "sharpenX8"; 
+            break;
+        }
+        case 6: {
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "unsharpen_1"; 
+            break;
+        }
+        case 7: {
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "unsharpen_2"; 
+            break;
+        }
+        case 8: {
+            dimAndKernelWeight[2] = 16.0; 
+            filter = "gaussian"; 
+            break;
         }
     }
 });
@@ -189,7 +219,7 @@ function configureTexture(image) {
     texture = gl.createTexture(); 
     gl.bindTexture(gl.TEXTURE_2D, texture); 
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); 
-   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
 
 
@@ -232,6 +262,36 @@ function render() {
             0.0625, 0.125, 0.0625,
             0.125,  0.25,  0.125,
             0.0625, 0.125, 0.0625
+        ], 
+        fourNeighborEdge: [
+            0, -1, 0, 
+            -1, 4, 1, 
+            0, -1, 0
+        ], 
+        sharpenX2: [
+            0, -2, 0,
+            -2, 9, -2,
+            0, -2, 0
+        ], 
+        sharpenX8: [
+            0, -8, 0,
+            -8, 33, -8,
+            0, -8, 0
+        ],
+        unsharpen_1: [
+            -1, -1, -1,
+            -1,  9, -1,
+            -1, -1, -1
+        ], 
+        unsharpen_2: [
+            -1, -1, -1,
+            -1,  16, -1,
+            -1, -1, -1
+        ],
+        gaussian: [
+            1, 2, 1,
+            2, 4, 2,
+            1, 2, 1
         ]
       };
 
