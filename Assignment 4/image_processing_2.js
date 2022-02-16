@@ -13,6 +13,7 @@ var imageAspect;
 var dimAndKernelWeight = vec3(1241.0, 639.0, 16.0);
 var kernel = mat3(); 
 var filter = "normal"; 
+var seg_thresh = -1;        // -1 means don't apply segmentation thresholding
 
 var left = -2;              // left limit of world coords
 var right = 2;              // right limit of world coords 
@@ -95,6 +96,15 @@ window.onload = function init()
     gl.enableVertexAttribArray(vPosition); 
 
     render(); 
+}
+
+document.getElementById("Seg_Thresh").onchange = function() {
+    if(event.srcElement.checked == true) {
+        seg_thresh = 1; 
+    }
+    else {
+        seg_thresh = -1; 
+    }
 }
 
 var m = document.getElementById("mymenu"); 
@@ -230,6 +240,9 @@ function render() {
 
       var dimAndKernelWeightLoc = gl.getUniformLocation(program, "dimAndKernelWeight"); 
       gl.uniform3fv(dimAndKernelWeightLoc, dimAndKernelWeight); 
+
+      var seg_thres_Loc = gl.getUniformLocation(program, "seg_thresh"); 
+      gl.uniform1i(seg_thres_Loc, seg_thresh); 
 
       gl.drawArrays(gl.TRIANGLES, 0 , 6);       // Draw two triangles using the TRIANGLES primitive using 6 vertices
       requestAnimationFrame(render); 

@@ -11,6 +11,11 @@
             <option value = "2">Triangle Blur</option>
         </select>
 
+        <div>
+            <input id = "Seg_Thresh" type = "checkbox" value = "Seg_Thresh"/>
+            <label for = "Seg_Thresh">Apply Segmentation Thresholding</label>
+        </div>
+
         <script id="vertex-shader" type="x-shader/x-vertex">
             #version 300 es
 
@@ -38,11 +43,13 @@
             uniform vec3 dimAndKernelWeight; 
             uniform float kernel[9]; 
             uniform float brightness; 
+            uniform int seg_thresh; 
 
             void main()
             {
-                vec2 onePixel = vec2(1.0/dimAndKernelWeight[0], 1.0/dimAndKernelWeight[1]);
 
+                vec2 onePixel = vec2(1.0/dimAndKernelWeight[0], 1.0/dimAndKernelWeight[1]);
+                
                 vec4 colorSum = 
                 texture(texMap, fTexCoord + onePixel * vec2(-1, -1)) * kernel[0] +
                 texture(texMap, fTexCoord + onePixel * vec2( 0, -1)) * kernel[1] +
@@ -54,7 +61,20 @@
                 texture(texMap, fTexCoord + onePixel * vec2( 0,  1)) * kernel[7] +
                 texture(texMap, fTexCoord + onePixel * vec2( 1,  1)) * kernel[8] ;
 
-                fColor = vec4((colorSum / dimAndKernelWeight[2]).rgb, 1.0);
+                vec4 color = vec4((colorSum / dimAndKernelWeight[2]).rgb, 1.0);
+
+                float intensity = (color.r + color.g + color.g) / 3.0;
+                
+                if(seg_thresh == 1 && intensity > (100.0/255.0)) {
+                    color = vec4(1.0, 1.0, 1.0, 1.0);
+                }
+                else if (seg_thresh == 1 && intensity <= (100.0/255.0)) {
+                    color = vec4(0.0, 0.0, 0.0, 1.0); 
+                }
+
+                fColor = color; 
+
+                
             }
         </script>
 
