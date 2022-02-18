@@ -147,7 +147,7 @@ m.addEventListener("click", function() {
             break;
         }
         case 7: {
-            dimAndKernelWeight[2] = 1.0; 
+            dimAndKernelWeight[2] = 8.0; 
             filter = "unsharpen_2"; 
             break;
         }
@@ -156,6 +156,12 @@ m.addEventListener("click", function() {
             filter = "gaussian"; 
             break;
         }
+        case 9: {
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "edge_detect_2"; 
+            break;
+        }
+
     }
 });
 
@@ -265,7 +271,7 @@ function render() {
         ], 
         fourNeighborEdge: [
             0, -1, 0, 
-            -1, 4, 1, 
+            -1, 4, -1, 
             0, -1, 0
         ], 
         sharpenX2: [
@@ -292,6 +298,11 @@ function render() {
             1, 2, 1,
             2, 4, 2,
             1, 2, 1
+        ], 
+        edge_detect_2: [
+            -1, -1, -1, 
+            -1,  8, -1,
+            -1, -1, -1 
         ]
       };
 
