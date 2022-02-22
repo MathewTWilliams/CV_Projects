@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!--------------------------------------------------------->
+<!-- Prof R CV lect7 Image Processing Convultion Filters -->
+<!--------------------------------------------------------->
+
+<html>
+    <head>
+        <select id="mymenu" size = "5">
+            <option value = "0">No Filter</option>
+            <option value = "1">Box Blur</option>
+            <option value = "2">Triangle Blur</option>
+            <option value = "3">Four Neighbor Edge</option>
+            <option value = "4">Sharpen x2</option>
+            <option value = "5">Sharpen x8</option>
+            <option value = "6">Unsharpen 1</option>
+            <option value = "7">Unsharpen 2</option>
+            <option value = "8">Gaussian Blur (3x3)</option>
+            <option value = "9">Laplacian Edge 2</option>
+            <option value = "10">Sobel Edge X </option>
+            <option value = "11">Sobel Edge Y</option>
+            <option value = "12">Gaussian Blur (5x5)</option>
+            <option value = "13">Gaussian Blue 2 (5x5)</option> 
+        </select>
+
+        <div>
+            <input id = "Seg_Thresh" type = "checkbox" value = "Seg_Thresh"/>
+            <label for = "Seg_Thresh">Apply Segmentation Thresholding</label>
+        </div>
+
+        <script id="vertex-shader" type="x-shader/x-vertex">
+            #version 300 es
+
+            in  vec2 vPosition; 
+            in  vec2 vTexCoord; 
+            out vec2 fTexCoord; 
+
+            uniform mat4 P; 
+
+            void main()
+            {
+                fTexCoord = vTexCoord; 
+                gl_Position = P * vec4(vPosition, 0, 1); 
+            }
+        </script>
+
+        <script id="fragment-shader" type="x-shader/x-fragment">
+            #version 300 es
+            precision mediump float; 
+
+            in vec2 fTexCoord; 
+            out vec4 fColor; 
+
+            uniform sampler2D texMap; 
+            uniform vec3 dimAndKernelWeight; 
+            uniform float kernel[25]; 
+            uniform float brightness; 
+            uniform int seg_thresh; 
+
+            void main()
+            {
+
+                vec2 onePixel = vec2(1.0/dimAndKernelWeight[0], 1.0/dimAndKernelWeight[1]);
+                
+                vec4 colorSum = 
+                texture(texMap, fTexCoord + onePixel * vec2(-1, -1)) * kernel[0] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0, -1)) * kernel[1] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1, -1)) * kernel[2] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1,  0)) * kernel[3] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0,  0)) * kernel[4] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1,  0)) * kernel[5] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1,  1)) * kernel[6] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0,  1)) * kernel[7] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1,  1)) * kernel[8] ;
+
+                vec4 color = vec4((colorSum / dimAndKernelWeight[2]).rgb, 1.0);
+
+                float intensity = (color.r + color.g + color.g) / 3.0;
+                
+                if(seg_thresh == 1 && intensity > (100.0/255.0)) {
+                    color = vec4(1.0, 1.0, 1.0, 1.0);
+                }
+                else if (seg_thresh == 1 && intensity <= (100.0/255.0)) {
+                    color = vec4(0.0, 0.0, 0.0, 1.0); 
+                }
+
+                fColor = color; 
+
+                
+            }
+        </script>
+
+        <script type="text/javascript" src="../Common/initShaders.js"></script>
+        <script type="text/javascript" src="../Common/MVnew.js"></script>
+        <script type="text/javascript" src="image_processing_3.js"></script>
+
+    </head>
+
+    <body>
+        <canvas id="gl-canvas" width = "1280" height = "720">
+            Oops ... your browser doesn't support the HTML5 canvas element
+        </canvas>
+        <img id="texImage" src="rose_noise.png" hidden></img>
+    </body>
+</html>
