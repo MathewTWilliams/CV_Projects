@@ -117,17 +117,17 @@ m.addEventListener("click", function() {
         }
         case 1: { 
             dimAndKernelWeight[2] = 1.0;
-            filter = "boxBlur";
+            filter = "boxBlur_3x3";
             break;
         }
         case 2: { 
             dimAndKernelWeight[2] = 1.0; 
-            filter = "triangleBlur"; 
+            filter = "triangleBlur_3x3"; 
             break;
         }
         case 3: {
             dimAndKernelWeight[2] = 1.0; 
-            filter = "fourNeighborEdge"; 
+            filter = "laplacian_edge_1"; 
             break;
         }
         case 4: {
@@ -142,7 +142,7 @@ m.addEventListener("click", function() {
         }
         case 6: {
             dimAndKernelWeight[2] = 1.0; 
-            filter = "unsharpen_1"; 
+            filter = "unsharpen_1_3x3"; 
             break;
         }
         case 7: {
@@ -151,37 +151,73 @@ m.addEventListener("click", function() {
             break;
         }
         case 8: {
-            dimAndKernelWeight[2] = 16.0; 
-            filter = "gaussian_blur_3x3"; 
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "laplacian_edge_2"; 
             break;
         }
         case 9: {
             dimAndKernelWeight[2] = 1.0; 
-            filter = "Laplacian_edge_2"; 
+            filter = "emboss_edge"; 
             break;
         }
 
         case 10: {
             dimAndKernelWeight[2] = 1.0; 
-            filter = "sobel_edge_x"; 
+            filter = "sobel_edge_right"; 
             break;
         }
 
         case 11: {
             dimAndKernelWeight[2] = 1.0; 
-            filter = "sobel_edge_y"; 
+            filter = "sobel_edge_top"; 
             break;
         }
 
         case 12: {
-            dimAndKernelWeight[2] = 159.0; 
-            filter = "gaussian_blur_5x5"; 
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "sobel_edge_left"; 
             break;
         }
 
         case 13: {
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "sobel_edge_bottom"; 
+            break;
+        }
+
+        case 14: {
+            dimAndKernelWeight[2] = 159.0; 
+            filter = "gaussian_blur_5x5_1"; 
+            break;
+        }
+
+        case 15: {
             dimAndKernelWeight[2] = 273.0; 
             filter = "gaussian_blur_5x5_2"; 
+            break;
+        }
+
+        case 16: {
+            dimAndKernelWeight[2] = 571.0; 
+            filter = "gaussian_blur_5x5_3"; 
+            break;
+        }
+
+        case 17: {
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "box_blur_5x5"; 
+            break;
+        }
+
+        case 18: {
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "unsharpen_1_5x5"; 
+            break;
+        }
+
+        case 19: {
+            dimAndKernelWeight[2] = 1.0; 
+            filter = "laplacian_edge_2_5x5"; 
             break;
         }
 
@@ -284,84 +320,98 @@ function render() {
           0, 0, 0, 0, 0,
           0, 0, 0, 0, 0
         ],
-        boxBlur: [
+        boxBlur_3x3: [ // Lowpass filter
             0,     0,     0,     0, 0,
             0, 0.111, 0.111, 0.111, 0,
             0, 0.111, 0.111, 0.111, 0,
             0, 0.111, 0.111, 0.111, 0,
             0,     0,     0,     0, 0
         ],
-        triangleBlur: [
+        triangleBlur_3x3: [ // Gaussian Filter
             0,      0,     0,      0, 0,
             0, 0.0625, 0.125, 0.0625, 0,
-            0, 0.125,  0.25,  0.125,  0, 
+            0,  0.125,  0.25,  0.125,  0, 
             0, 0.0625, 0.125, 0.0625, 0,
             0,      0,     0,      0, 0
         ], 
-        fourNeighborEdge: [
+        laplacian_edge_1: [ //Laplacian Edge 1
             0,  0,  0,  0, 0,
             0,  0, -1,  0, 0,
             0, -1,  4, -1, 0,
             0,  0, -1,  0, 0, 
             0,  0,  0,  0, 0
         ], 
-        sharpenX2: [
+        sharpenX2: [    // Sharpening from homework
             0,  0,  0,  0, 0, 
             0,  0, -2,  0, 0, 
             0, -2,  9, -2, 0, 
             0,  0, -2,  0, 0, 
             0,  0,  0,  0, 0
         ], 
-        sharpenX8: [
+        sharpenX8: [    // Sharpening from homework
             0,  0,  0,  0, 0,
             0,  0, -8,  0, 0,
             0, -8, 33, -8, 0, 
             0,  0, -8,  0, 0,  
             0,  0,  0,  0, 0
         ],
-        unsharpen_1: [
+        unsharpen_1_3x3: [ // Unsharpening from homework
             0,  0,  0,  0, 0, 
             0, -1, -1, -1, 0, 
             0, -1,  9, -1, 0,
             0, -1, -1, -1, 0, 
             0,  0,  0,  0, 0
         ], 
-        unsharpen_2: [
+        unsharpen_2: [ // Unsharpening from hoemwork
             0,  0,  0,  0, 0, 
             0, -1, -1, -1, 0,
             0, -1, 16, -1, 0,
             0, -1, -1, -1, 0, 
             0,  0,  0,  0, 0
         ],
-        gaussian_blur_3x3: [
-            0, 0, 0, 0, 0, 
-            0, 1, 2, 1, 0, 
-            0, 2, 4, 2, 0,
-            0, 1, 2, 1, 0,
-            0, 0, 0, 0, 0
-        ], 
-        Laplacian_edge_2: [
+        laplacian_edge_2: [ // High pass filter
             0,  0,  0,  0, 0,
             0, -1, -1, -1, 0,
             0, -1,  8, -1, 0, 
             0, -1, -1, -1, 0,
             0,  0,  0,  0, 0 
         ], 
-        sobel_edge_x: [
+        emboss_edge: [ 
+            0,  0,  0,  0, 0,
+            0, -2, -1, 0, 0,
+            0, -1,  1, 1, 0, 
+            0,  0,  1, 2, 0,
+            0,  0,  0,  0, 0 
+        ],
+        sobel_edge_right: [ // From homework
             0,  0, 0, 0, 0, 
             0, -1, 0, 1, 0,
             0, -2, 0, 2, 0,
             0, -1, 0, 1, 0,
             0,  0, 0, 0, 0
         ], 
-        sobel_edge_y: [
+        sobel_edge_top: [ // From homework
              0,  0,  0,  0, 0, 
              0,  1,  2,  1, 0, 
              0,  0,  0,  0, 0, 
              0, -1, -2, -1, 0, 
              0,  0,  0,  0, 0
         ], 
-        gaussian_blur_5x5: [
+        sobel_edge_left: [ // From homework
+            0, 0, 0,  0, 0, 
+            0, 1, 0, -1, 0,
+            0, 2, 0, -2, 0,
+            0, 1, 0, -1, 0,
+            0, 0, 0,  0, 0
+        ], 
+        sobel_edge_bottom: [ // From homework
+             0,  0,  0,  0, 0, 
+             0, -1, -2, -1, 0, 
+             0,  0,  0,  0, 0, 
+             0,  1,  2,  1, 0, 
+             0,  0,  0,  0, 0
+        ], 
+        gaussian_blur_5x5_1: [ // 5x5 Gaussian Blur from slides
             2,  4,  5,  4, 2, 
             4,  9, 12,  9, 4, 
             5, 12, 15, 12, 5, 
@@ -369,12 +419,45 @@ function render() {
             2,  4,  5,  4, 2
         ], 
 
-        gaussian_blue_5x5_2: [
+        gaussian_blur_5x5_2: [ // traditional 5x5 Gaussian Blur
             1,  4,  7,  4, 1,
             4, 16, 26, 16, 4,
             7, 26, 41, 26, 7, 
             4, 16, 26, 16, 4, 
             1,  4,  7,  4, 1
+        ], 
+
+        gaussian_blur_5x5_3: [
+             2,  7,  12,  7,  2,
+             7, 31,  52, 31,  7, 
+            12, 52, 127, 52, 12,
+             7, 31,  52, 31,  7, 
+             2,  7,  12,  7,  2
+        ],
+
+        box_blur_5x5 : [ // 5x5 Low pass filter
+            0.04, 0.04, 0.04, 0.04, 0.04,
+            0.04, 0.04, 0.04, 0.04, 0.04,
+            0.04, 0.04, 0.04, 0.04, 0.04,
+            0.04, 0.04, 0.04, 0.04, 0.04, 
+            0.04, 0.04, 0.04, 0.04, 0.04
+        ],
+
+        unsharpen_1_5x5: [ // 5x5 Hipass filter
+            -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1,
+            -1, -1, 24, -1, -1,
+            -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1,
+        ], 
+
+        laplacian_edge_2_5x5: [
+            -1, -3, -4, -3, -1, 
+            -3,  0,  6,  0, -3, 
+            -4,  6, 20,  6, -4, 
+            -3,  0,  6,  0, -3,
+            -1, -3, -4, -3, -1, 
+
         ]
 
       };

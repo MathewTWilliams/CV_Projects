@@ -7,19 +7,25 @@
     <head>
         <select id="mymenu" size = "5">
             <option value = "0">No Filter</option>
-            <option value = "1">Box Blur</option>
-            <option value = "2">Triangle Blur</option>
-            <option value = "3">Four Neighbor Edge</option>
+            <option value = "1">Box Blur (3x3)</option>
+            <option value = "2">Triangle Blur (Gaussian) (3x3)</option>
+            <option value = "3">Laplacian Edge 1 (four neighbor)</option>
             <option value = "4">Sharpen x2</option>
             <option value = "5">Sharpen x8</option>
-            <option value = "6">Unsharpen 1</option>
+            <option value = "6">Unsharpen 1 (3x3)</option>
             <option value = "7">Unsharpen 2</option>
-            <option value = "8">Gaussian Blur (3x3)</option>
-            <option value = "9">Laplacian Edge 2</option>
-            <option value = "10">Sobel Edge X </option>
-            <option value = "11">Sobel Edge Y</option>
-            <option value = "12">Gaussian Blur (5x5)</option>
-            <option value = "13">Gaussian Blue 2 (5x5)</option> 
+            <option value = "8">Laplacian Edge 2</option>
+            <option value = "9"> Emboss edge</option>
+            <option value = "10">Sobel Edge Right</option>
+            <option value = "11">Sobel Edge Top</option>
+            <option value = "12">Sobel Edge Left</option>
+            <option value = "13">Sobel Edge Bottom</option>
+            <option value = "14">Gaussian Blur (5x5)</option>
+            <option value = "15">Gaussian Blur 2 (5x5)</option>
+            <option value = "16">Gaussian Blur 3</option>
+            <option value = "17">Box Blur (5x5)</option>
+            <option value = "18">Unsharpen 3 (5x5)</option>
+            <option value = "19">Laplacian Edge 2 (5x5)</option>
         </select>
 
         <div>
@@ -62,15 +68,32 @@
                 vec2 onePixel = vec2(1.0/dimAndKernelWeight[0], 1.0/dimAndKernelWeight[1]);
                 
                 vec4 colorSum = 
-                texture(texMap, fTexCoord + onePixel * vec2(-1, -1)) * kernel[0] +
-                texture(texMap, fTexCoord + onePixel * vec2( 0, -1)) * kernel[1] +
-                texture(texMap, fTexCoord + onePixel * vec2( 1, -1)) * kernel[2] +
-                texture(texMap, fTexCoord + onePixel * vec2(-1,  0)) * kernel[3] +
-                texture(texMap, fTexCoord + onePixel * vec2( 0,  0)) * kernel[4] +
-                texture(texMap, fTexCoord + onePixel * vec2( 1,  0)) * kernel[5] +
+                texture(texMap, fTexCoord + onePixel * vec2(-2,  2)) * kernel[0] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1,  2)) * kernel[1] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0,  2)) * kernel[2] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1,  2)) * kernel[3] +
+                texture(texMap, fTexCoord + onePixel * vec2( 2,  2)) * kernel[4] +
+                texture(texMap, fTexCoord + onePixel * vec2(-2,  1)) * kernel[5] +
                 texture(texMap, fTexCoord + onePixel * vec2(-1,  1)) * kernel[6] +
                 texture(texMap, fTexCoord + onePixel * vec2( 0,  1)) * kernel[7] +
-                texture(texMap, fTexCoord + onePixel * vec2( 1,  1)) * kernel[8] ;
+                texture(texMap, fTexCoord + onePixel * vec2( 1,  1)) * kernel[8] +
+                texture(texMap, fTexCoord + onePixel * vec2( 2,  1)) * kernel[9] +
+                texture(texMap, fTexCoord + onePixel * vec2(-2,  0)) * kernel[10] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1,  0)) * kernel[11] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0,  0)) * kernel[12] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1,  0)) * kernel[13] +
+                texture(texMap, fTexCoord + onePixel * vec2( 2,  0)) * kernel[14] +
+                texture(texMap, fTexCoord + onePixel * vec2(-2, -1)) * kernel[15] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1, -1)) * kernel[16] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0, -1)) * kernel[17] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1, -1)) * kernel[18] +
+                texture(texMap, fTexCoord + onePixel * vec2( 2, -1)) * kernel[19] +
+                texture(texMap, fTexCoord + onePixel * vec2(-2, -2)) * kernel[20] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1, -2)) * kernel[21] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0, -2)) * kernel[22] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1, -2)) * kernel[23] +
+                texture(texMap, fTexCoord + onePixel * vec2( 2, -2)) * kernel[24] ;
+
 
                 vec4 color = vec4((colorSum / dimAndKernelWeight[2]).rgb, 1.0);
 
