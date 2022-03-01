@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<!--------------------------------------------------------->
+<!-- Prof R CV lect7 Image Processing Convultion Filters -->
+<!--------------------------------------------------------->
+
+<html>
+    <head>
+        <select id="mymenu" size = "5">
+            <option value = "0">Normal</option>
+            <option value = "1">Box Blur 1</option>
+            <option value = "2">Box Blur 2</option>
+            <option value = "3">Triangle Blur</option>
+            <option value = "4">Gaussian Blur 1</option>
+            <option value = "5">Gaussian Blur 2</option>
+            <option value = "6">Gaussian Blur 3</option>
+            <option value = "7">Sharpen x2</option>
+            <option value = "8">Sharpen x8</option>
+            <option value = "9">Unsharpen 1</option>
+            <option value = "10">Unsharpen 2</option>
+            <option value = "11">Unsharpen 3</option>
+            <option value = "12">Emboss edge</option>
+            <option value = "13">Laplacian Edge 1</option>
+            <option value = "14">Laplacian Edge 2</option>
+            <option value = "15">Laplacian Edge 3</option>
+            <option value = "16">Sobel Edge Right (Horizontal)</option>
+            <option value = "17">Sobel Edge Top (Vertical)</option>
+            <option value = "18">Sobel Edge Left</option>
+            <option value = "19">Sobel Edge Bottom</option>
+            <option value = "20">Prewitt Edge Right (Horizontal)</option>
+            <option value = "21">Prewitt Edge Top (Vertical)</option>
+            <option value = "22">Prewitt Edge Left</option>
+            <option value = "23">Prewitt Edge Bottom</option>
+        </select>
+
+        <div>
+            <input id = "Seg_Thresh" type = "checkbox" value = "Seg_Thresh"/>
+            <label for = "Seg_Thresh">Apply Segmentation Thresholding</label>
+        </div>
+
+        <div> 
+            <input id = "Toggle_Color" type = "checkbox" value = "Toggle_Color" />
+            <label for = "Toggle_Color">Make Black & White?</label>
+        </div>
+
+        <script id="vertex-shader" type="x-shader/x-vertex">
+            #version 300 es
+
+            in  vec2 vPosition; 
+            in  vec2 vTexCoord; 
+            out vec2 fTexCoord; 
+
+            uniform mat4 P; 
+
+            void main()
+            {
+                fTexCoord = vTexCoord; 
+                gl_Position = P * vec4(vPosition, 0, 1); 
+            }
+        </script>
+
+        <script id="fragment-shader" type="x-shader/x-fragment">
+            #version 300 es
+            precision mediump float; 
+
+            in vec2 fTexCoord; 
+            out vec4 fColor; 
+
+            uniform sampler2D texMap; 
+            uniform vec3 dimAndKernelWeight; 
+            uniform float kernel[25]; 
+            uniform float brightness; 
+            uniform int seg_thresh; 
+            uniform int is_color; 
+
+            void main()
+            {
+
+                vec2 onePixel = vec2(1.0/dimAndKernelWeight[0], 1.0/dimAndKernelWeight[1]);
+                
+                vec4 colorSum = 
+                texture(texMap, fTexCoord + onePixel * vec2(-2,  2)) * kernel[0] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1,  2)) * kernel[1] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0,  2)) * kernel[2] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1,  2)) * kernel[3] +
+                texture(texMap, fTexCoord + onePixel * vec2( 2,  2)) * kernel[4] +
+                texture(texMap, fTexCoord + onePixel * vec2(-2,  1)) * kernel[5] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1,  1)) * kernel[6] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0,  1)) * kernel[7] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1,  1)) * kernel[8] +
+                texture(texMap, fTexCoord + onePixel * vec2( 2,  1)) * kernel[9] +
+                texture(texMap, fTexCoord + onePixel * vec2(-2,  0)) * kernel[10] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1,  0)) * kernel[11] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0,  0)) * kernel[12] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1,  0)) * kernel[13] +
+                texture(texMap, fTexCoord + onePixel * vec2( 2,  0)) * kernel[14] +
+                texture(texMap, fTexCoord + onePixel * vec2(-2, -1)) * kernel[15] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1, -1)) * kernel[16] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0, -1)) * kernel[17] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1, -1)) * kernel[18] +
+                texture(texMap, fTexCoord + onePixel * vec2( 2, -1)) * kernel[19] +
+                texture(texMap, fTexCoord + onePixel * vec2(-2, -2)) * kernel[20] +
+                texture(texMap, fTexCoord + onePixel * vec2(-1, -2)) * kernel[21] +
+                texture(texMap, fTexCoord + onePixel * vec2( 0, -2)) * kernel[22] +
+                texture(texMap, fTexCoord + onePixel * vec2( 1, -2)) * kernel[23] +
+                texture(texMap, fTexCoord + onePixel * vec2( 2, -2)) * kernel[24] ;
+
+
+                vec4 color = vec4((colorSum / dimAndKernelWeight[2]).rgb, 1.0);
+
+                float i = (color.r + color.g + color.g) / 3.0;
+
+                if(is_color == -1) {
+                    color.rgb = vec3(i,i,i);
+                }
+                
+                if(seg_thresh == 1 && i > (100.0/255.0)) {
+                    color = vec4(1.0, 1.0, 1.0, 1.0);
+                }
+                else if (seg_thresh == 1 && i <= (100.0/255.0)) {
+                    color = vec4(0.0, 0.0, 0.0, 1.0); 
+                }
+
+                fColor = color; 
+
+                
+            }
+        </script>
+
+        <script type="text/javascript" src="../Common/initShaders.js"></script>
+        <script type="text/javascript" src="../Common/MVnew.js"></script>
+        <script type="text/javascript" src="image_processing_3.js"></script>
+
+    </head>
+
+    <body>
+        <canvas id="gl-canvas" width = "1280" height = "720">
+            Oops ... your browser doesn't support the HTML5 canvas element
+        </canvas>
+        <img id="texImage" src="rose.png" hidden></img>
+    </body>
+</html>
