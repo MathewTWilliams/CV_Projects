@@ -11,6 +11,7 @@ var canvas;
 var aspect; 
 
 var imageAspect; 
+var image = document.getElementById("texImage")
 
 var dimAndKernelWeight = vec3(1241.0, 639.0, 16.0);
 var filter = "normal"; 
@@ -41,7 +42,7 @@ window.onload = function init()
     gl.useProgram(program);                                         // Make this the active shader program
 
     //Set up texture
-    var image = document.getElementById("texImage"); 
+    //var image = document.getElementById("texImage"); 
     configureTexture(image); 
 
     imageAspect = image.width / image.height; 
@@ -101,6 +102,7 @@ window.onload = function init()
     render(); 
 };
 
+
 document.getElementById("Seg_Thresh").onchange = function() {
     if(event.srcElement.checked == true) {
         seg_thresh = 1; 
@@ -123,8 +125,7 @@ function OnOpenCVReady() {
     document.getElementById('status').innerHTML = 'OpenCV.js is ready!';
 }
 
-document.getElementById("texImage").onload = function () {
-    let image = document.getElementById("texImage"); 
+image.onload = function () { 
 
     imageAspect = image.width / image.height; 
     dimAndKernelWeight[0] = image.width; 
@@ -147,8 +148,6 @@ document.getElementById("texImage").onload = function () {
     let src = cv.imread(image); 
     cv.imshow('opencv_output', src); 
     src.delete(); 
-
-
 
 };
 
@@ -297,7 +296,6 @@ var n = document.getElementById("opencv_menu");
 n.addEventListener("click", function() {
     switch(n.selectedIndex) {
         case 0: {
-            let image = document.getElementById("texImage"); 
             let src = cv.imread(image); 
             let dst = new cv.Mat(); 
             cv.cvtColor(src, src, cv.COLOR_RGB2GRAY, 0); 
@@ -309,6 +307,30 @@ n.addEventListener("click", function() {
         }
 
         case 1: {
+            let src = cv.imread(image); 
+            let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3); 
+            let lines = new cv.Mat(); 
+            let color = new cv.Scalar(200, 200, 200); 
+
+            cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0) // B&W
+            cv.Canny(src, src, 50, 200, 3); // Edges via gradients
+            cv.HoughLinesP(src, lines, 1, Math.PI/180, 2, 0, 0);
+            //draw lines
+            for(let i = 0; i < lines.rows; i++) {
+                let startPoint = new cv.Point(lines.data32S[i*4], lines.data32S[i*4+1]); 
+                let endPoint = new cv.Point(lines.data32S[i*4 + 2], lines.data32S[i*4+3]); 
+                cv.line(dst, startPoint, endPoint, color);
+            }
+
+            cv.imshow("opencv_output", dst); 
+            src.delete(); 
+            dst.delete(); 
+            lines.delete(); 
+
+            break;
+        }
+
+        case 2: {
             break;
         }
     }
