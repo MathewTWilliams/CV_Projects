@@ -3,6 +3,8 @@
 // Edited by Matt Williams
 //
 
+//const cv = require("./opencv");
+
 var gl; 
 var program; 
 var canvas; 
@@ -21,6 +23,7 @@ var bottom = -2;            // bottom limit of world coords
 var topBound = 2;           // top limit of world coords
 var near = -10;             // near clip plane
 var far = 10;               // far clip plane
+
 
 
 window.onload = function init()
@@ -84,7 +87,7 @@ window.onload = function init()
     
     // Load the data into the GPU
 
-    var bufferId = gl.createBuffer();                                   // Generate a VBO
+    bufferId = gl.createBuffer();                                   // Generate a VBO
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);                           // Bind this VBO to be the active one
     gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);    // Load the VBO with vertex data
 
@@ -96,7 +99,7 @@ window.onload = function init()
     gl.enableVertexAttribArray(vPosition); 
 
     render(); 
-}
+};
 
 document.getElementById("Seg_Thresh").onchange = function() {
     if(event.srcElement.checked == true) {
@@ -108,7 +111,7 @@ document.getElementById("Seg_Thresh").onchange = function() {
 };
 
 document.getElementById("Toggle_Color").onchange = function() {
-    if(event.srcElement.checked == True){
+    if(event.srcElement.checked == true){
         is_color = -1; 
     }
     else {
@@ -116,7 +119,46 @@ document.getElementById("Toggle_Color").onchange = function() {
     }
 };
 
-var m = document.getElementById("mymenu"); 
+function OnOpenCVReady() {
+    document.getElementById('status').innerHTML = 'OpenCV.js is ready!';
+}
+
+document.getElementById("texImage").onload = function () {
+    let image = document.getElementById("texImage"); 
+
+    imageAspect = image.width / image.height; 
+    dimAndKernelWeight[0] = image.width; 
+    dimAndKernelWeight[1] = image.height; 
+    var vertices = [
+        vec2(-2.0 * imageAspect, 2.0),
+        vec2(-2.0 * imageAspect, -2.0),
+        vec2(2.0 * imageAspect, -2.0),
+        vec2(-2.0 * imageAspect, 2.0),
+        vec2(2.0 * imageAspect, 2.0),
+        vec2(2.0 * imageAspect, -2.0)
+    ];
+
+    var bufferId = gl.createBuffer(); 
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId); 
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW); 
+
+    //
+    configureTexture(image); 
+    let src = cv.imread(image); 
+    cv.imshow('opencv_output', src); 
+    src.delete(); 
+
+
+
+};
+
+document.getElementById("fileInput").addEventListener('change', (e) => {
+    let image = document.getElementById("texImage"); 
+    image.src = URL.createObjectURL(e.target.files[0]); 
+}, false);
+
+
+var m = document.getElementById("webgl_menu"); 
 m.addEventListener("click", function() {
     switch(m.selectedIndex) {
         case 0: {
@@ -250,6 +292,28 @@ m.addEventListener("click", function() {
 
     }
 });
+
+var n = document.getElementById("opencv_menu"); 
+n.addEventListener("click", function() {
+    switch(n.selectedIndex) {
+        case 0: {
+            let image = document.getElementById("texImage"); 
+            let src = cv.imread(image); 
+            let dst = new cv.Mat(); 
+            cv.cvtColor(src, src, cv.COLOR_RGB2GRAY, 0); 
+            cv.Canny(src, dst, 50, 100, 5, false); 
+            cv.imshow('opencv_output', dst); 
+            src.delete(); 
+            dst.delete(); 
+            break; 
+        }
+
+        case 1: {
+            break;
+        }
+    }
+    
+}); 
 
 // Callback function for keydown events, registers function dealWithKeyboard
 window.addEventListener("keydown", dealWithKeyboard, false); 

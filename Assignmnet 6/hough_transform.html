@@ -5,7 +5,12 @@
 
 <html>
     <head>
-        <select id="mymenu" size = "5">
+        <h2>File Input</h2>
+        <div class = "caption">Source Image<input type= 'file' id="fileInput" name = "file"/></div>
+        <p></p>
+        <h2>WebGL Output</h2>
+        <p></p>
+        <select id="webgl_menu" size = "5">
             <option value = "0">Normal</option>
             <option value = "1">Box Blur 1</option>
             <option value = "2">Box Blur 2</option>
@@ -31,6 +36,16 @@
             <option value = "22">Prewitt Edge Left</option>
             <option value = "23">Prewitt Edge Bottom</option>
         </select>
+
+        <h2>Open CV related</h2>
+        <select id="opencv_menu" size = "5">
+            <option value = "0">Canny Edge Detection</option>
+            <option value = "1">Hough Transform</option>
+        </select>
+        
+        <div>
+            <p id="status">OpenCV.js is loading...</p>
+        </div>
 
         <div>
             <input id = "Seg_Thresh" type = "checkbox" value = "Seg_Thresh"/>
@@ -126,10 +141,6 @@
             }
         </script>
 
-        <script type="text/javascript" src="../Common/initShaders.js"></script>
-        <script type="text/javascript" src="../Common/MVnew.js"></script>
-        <script type="text/javascript" src="image_processing_3.js"></script>
-
     </head>
 
     <body>
@@ -137,5 +148,11 @@
             Oops ... your browser doesn't support the HTML5 canvas element
         </canvas>
         <img id="texImage" src="rose.png" hidden></img>
+        <canvas id="opencv_output"></canvas>
     </body>
+
+    <script type="text/javascript" src="../Common/initShaders.js"></script>
+    <script type="text/javascript" src="../Common/MVnew.js"></script>
+    <script type="text/javascript" src="hough_transform.js"></script>
+    <script async type="text/javascript" src = "../Common/opencv.js" onload = "OnOpenCVReady();"></script>
 </html>
