@@ -5,6 +5,9 @@
 
 <html>
     <head>
+
+        <div class = "caption">imageSRC <input type ='file' id="fileInput" name = "file"/></div>
+        <p></p>
         <select id="mymenu" size = "5">
             <option value = "0">No Filter</option>
             <option value = "1">Box Blur (3x3)</option>
@@ -27,6 +30,10 @@
             <option value = "18">Unsharpen 3 (5x5)</option>
             <option value = "19">Laplacian Edge 2 (5x5)</option>
         </select>
+
+        <div>
+            <p id="status">OpenCV.js is loading...</p>
+        </div>
 
         <div>
             <input id = "Seg_Thresh" type = "checkbox" value = "Seg_Thresh"/>
@@ -112,10 +119,6 @@
             }
         </script>
 
-        <script type="text/javascript" src="../Common/initShaders.js"></script>
-        <script type="text/javascript" src="../Common/MVnew.js"></script>
-        <script type="text/javascript" src="image_processing_3.js"></script>
-
     </head>
 
     <body>
@@ -123,5 +126,14 @@
             Oops ... your browser doesn't support the HTML5 canvas element
         </canvas>
         <img id="texImage" src="rose.png" hidden></img>
+        <h2>Canny Edge Detection</h2>
+        <canvas id="canny_output"></canvas>
     </body>
+
+
+    <script type="text/javascript" src="../Common/initShaders.js"></script>
+    <script type="text/javascript" src="../Common/MVnew.js"></script>
+    <script type="text/javascript" src="image_processing_3.js"></script>
+    <script async type="text/javascript" src = "opencv.js" onload="onOpenCvReady();"></script>
+    
 </html>
