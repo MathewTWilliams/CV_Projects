@@ -39,9 +39,10 @@
 
         <h2>Open CV related</h2>
         <select id="opencv_menu" size = "5">
-            <option value = "0">Canny Edge Detection</option>
-            <option value = "1">Hough Transform Lines</option>
-            <option value = "2">Hough Transofmr Circles</option>
+            <option value = "0">Normal</option>
+            <option value = "1">Canny Edge Detection</option>
+            <option value = "2">Hough Transform Lines</option>
+            <option value = "3">Hough Transform Circles</option>
         </select>
         
         <div>
@@ -56,6 +57,11 @@
         <div> 
             <input id = "Toggle_Color" type = "checkbox" value = "Toggle_Color" />
             <label for = "Toggle_Color">Make Black & White?</label>
+        </div>
+        
+        <div> 
+            <input id = "Toggle_Video" type = "checkbox" value = "Toggle_Video" />
+            <label for = "Toggle_Video">Use webcam as input?</label>
         </div>
 
         <script id="vertex-shader" type="x-shader/x-vertex">
@@ -145,10 +151,13 @@
     </head>
 
     <body>
+        <video id = "videoInput"></video>
+        <h2>WebGL 2.0 Output</h2>
         <canvas id="gl-canvas" width = "1280" height = "720">
             Oops ... your browser doesn't support the HTML5 canvas element
         </canvas>
         <img id="texImage" src="rose.png" hidden></img>
+        <h2>OpenCV.js output</h2>
         <canvas id="opencv_output"></canvas>
     </body>
 

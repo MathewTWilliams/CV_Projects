@@ -25,7 +25,12 @@ var topBound = 2;           // top limit of world coords
 var near = -10;             // near clip plane
 var far = 10;               // far clip plane
 
-
+var is_streaming = false; 
+const FPS = 30; 
+var video = document.getElementById('videoInput'); 
+var video_src = new cv.Mat(video.height, video.width, cv.CV_8UC4); 
+var video_dst = new cv.Mat(video.height, video.width, cv.CV_8UC1); 
+var cap = new cv.VideoCapture(video); 
 
 window.onload = function init()
 {
@@ -103,6 +108,39 @@ window.onload = function init()
 };
 
 
+function initVideo(){ 
+    navigator.mediaDevices.getUserMedia({video:true, audio:false})
+        .then(function(stream) {
+            video.srcObject = stream; 
+            video.play(); 
+        })
+        .catch(function(err){
+            console.log("An error occurred! " + err); 
+        });
+}
+
+function processVideo() {
+    try{
+        if(!streaming) {
+            // clean and stop
+            video_src.delete(); 
+            video_dst.delete(); 
+            return; 
+        }
+        let begin = Date.now(); 
+        //start processing
+        cap.read(video_src); 
+        cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY); 
+        cv.imshow('opencv_output', video_dst); 
+        // schedule next one
+        let delay = 1000/FPS - (Date.now() - begin); 
+        setTimeout(processVideo(), delay);
+    }
+    catch(err){
+        console.log(err); 
+    }
+}
+
 document.getElementById("Seg_Thresh").onchange = function() {
     if(event.srcElement.checked == true) {
         seg_thresh = 1; 
@@ -118,6 +156,15 @@ document.getElementById("Toggle_Color").onchange = function() {
     }
     else {
         is_color = 1; 
+    }
+};
+
+document.getElementById("Toggle_Video").onchange = function() {
+    if(event.srcElement.checked == true){
+        is_streaming = true; 
+    }
+    else {
+        is_streaming = false; 
     }
 };
 
@@ -295,7 +342,15 @@ m.addEventListener("click", function() {
 var n = document.getElementById("opencv_menu"); 
 n.addEventListener("click", function() {
     switch(n.selectedIndex) {
+
         case 0: {
+            let src = cv.imread(image); 
+            cv.imshow('opencv_output', src); 
+            src.delete(); 
+            break; 
+        }
+
+        case 1: {
             let src = cv.imread(image); 
             let dst = new cv.Mat(); 
             cv.cvtColor(src, src, cv.COLOR_RGB2GRAY, 0); 
@@ -306,7 +361,7 @@ n.addEventListener("click", function() {
             break; 
         }
 
-        case 1: {
+        case 2: {
             let src = cv.imread(image); 
             let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3); 
             let lines = new cv.Mat(); 
@@ -330,7 +385,28 @@ n.addEventListener("click", function() {
             break;
         }
 
-        case 2: {
+        case 3: {
+            let src = cv.imread(image); 
+            let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8U); 
+            let circles = new cv.Mat(); 
+            let color = new cv.Scalar(255, 0, 0); 
+            
+            cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0); 
+            cv.HoughCircles(src, circles, cv.HOUGH_GRADIENT, 1, 45, 75, 40, 0, 0); 
+
+            for(let i = 0; i < circles.cols; i++) {
+                let x = circles.data32F[i*3]; 
+                let y = circles.data32F[i * 3 + 1]; 
+                let radius = circles.data32F[i * 3 + 2]; 
+                let center = new cv.Point(x,y); 
+                cv.circle(dst, center, radius, color); 
+
+            }
+
+            cv.imshow("opencv_output", dst); 
+            src.delete(); 
+            dst.delete(); 
+            circles.delete(); 
             break;
         }
     }
@@ -391,6 +467,10 @@ function dealWithKeyboard(e) {
         }
     }
 };
+
+function processVideo() {
+
+}
 
 
 function configureTexture(image) {
