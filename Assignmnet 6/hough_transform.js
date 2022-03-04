@@ -215,7 +215,7 @@ image.onload = function () {
     if(gl){
         configureTexture(image);
     } 
-    if(!is_streaming) {
+    if(!is_streaming && cv != null) {
         let src = cv.imread(image); 
         cv.imshow('opencv_output', src); 
         src.delete(); 
@@ -402,7 +402,6 @@ function edit_image() {
     switch(opencv_filter) {
         case "normal": {
             cv.imshow("opencv_output", src); 
-            src.delete(); 
             break;
         }
 
@@ -410,16 +409,14 @@ function edit_image() {
             let dst = new cv.Mat(); 
             dst = open_cv_canny(src, dst); 
             cv.imshow("opencv_output", dst); 
-            dst.delete(); 
-            src.delete(); 
+            dst.delete();
             break; 
         }
 
         case "hough_lines": {
             let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
             dst = open_cv_hough_lines(src, dst); 
-            cv.imshow("opencv_output", dst); 
-            src.delete(); 
+            cv.imshow("opencv_output", dst);  
             dst.delete(); 
             break; 
         }
@@ -428,7 +425,6 @@ function edit_image() {
             let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC1); 
             dst = open_cv_hough_circles(src, dst); 
             cv.imshow("opencv_output", dst); 
-            src.delete(); 
             dst.delete();  
             break; 
         }
