@@ -125,7 +125,7 @@ function processVideo() {
     try{
         if(!is_streaming) {
             //stop
-            edit_image(); 
+            cv_update_image(); 
             return; 
         } 
         let begin = Date.now(); 
@@ -199,18 +199,6 @@ image.onload = function () {
     imageAspect = image.width / image.height; 
     dimAndKernelWeight[0] = image.width; 
     dimAndKernelWeight[1] = image.height; 
-    /*var vertices = [
-        vec2(-2.0 * imageAspect, 2.0),
-        vec2(-2.0 * imageAspect, -2.0),
-        vec2(2.0 * imageAspect, -2.0),
-        vec2(-2.0 * imageAspect, 2.0),
-        vec2(2.0 * imageAspect, 2.0),
-        vec2(2.0 * imageAspect, -2.0)
-    ];
-
-    var bufferId = gl.createBuffer(); 
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId); 
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);*/
 
     if(gl){
         configureTexture(image);
@@ -388,11 +376,11 @@ n.addEventListener("click", function() {
         }
     }
 
-    edit_image(); 
+    cv_update_image(); 
     
 }); 
 
-function edit_image() {
+function cv_update_image() {
     if(is_streaming){
         return;  
     }
@@ -552,6 +540,190 @@ function configureTexture(image) {
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
+
+
+// Define several convolution kernels
+var kernels = {
+    normal: [
+      0, 0, 0, 0, 0, 
+      0, 0, 0, 0, 0,
+      0, 0, 1, 0, 0, 
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0
+    ],
+    boxBlur_3x3: [ // Lowpass filter
+        0,     0,     0,     0, 0,
+        0, 0.111, 0.111, 0.111, 0,
+        0, 0.111, 0.111, 0.111, 0,
+        0, 0.111, 0.111, 0.111, 0,
+        0,     0,     0,     0, 0
+    ],
+    triangleBlur: [ // Gaussian Filter
+        0,      0,     0,      0, 0,
+        0, 0.0625, 0.125, 0.0625, 0,
+        0,  0.125,  0.25,  0.125,  0, 
+        0, 0.0625, 0.125, 0.0625, 0,
+        0,      0,     0,      0, 0
+    ], 
+    laplacian_edge_1: [ //Laplacian Edge 1
+        0,  0,  0,  0, 0,
+        0,  0, -1,  0, 0,
+        0, -1,  4, -1, 0,
+        0,  0, -1,  0, 0, 
+        0,  0,  0,  0, 0
+    ], 
+    sharpenX2: [    // Sharpening from homework
+        0,  0,  0,  0, 0, 
+        0,  0, -2,  0, 0, 
+        0, -2,  9, -2, 0, 
+        0,  0, -2,  0, 0, 
+        0,  0,  0,  0, 0
+    ], 
+    sharpenX8: [    // Sharpening from homework
+        0,  0,  0,  0, 0,
+        0,  0, -8,  0, 0,
+        0, -8, 33, -8, 0, 
+        0,  0, -8,  0, 0,  
+        0,  0,  0,  0, 0
+    ],
+    unsharpen_1_3x3: [ // Unsharpening from homework
+        0,  0,  0,  0, 0, 
+        0, -1, -1, -1, 0, 
+        0, -1,  9, -1, 0,
+        0, -1, -1, -1, 0, 
+        0,  0,  0,  0, 0
+    ], 
+    unsharpen_2: [ // Unsharpening from hoemwork
+        0,  0,  0,  0, 0, 
+        0, -1, -1, -1, 0,
+        0, -1, 16, -1, 0,
+        0, -1, -1, -1, 0, 
+        0,  0,  0,  0, 0
+    ],
+    laplacian_edge_2: [ // High pass filter
+        0,  0,  0,  0, 0,
+        0, -1, -1, -1, 0,
+        0, -1,  8, -1, 0, 
+        0, -1, -1, -1, 0,
+        0,  0,  0,  0, 0 
+    ], 
+    emboss_edge: [ 
+        0,  0,  0,  0, 0,
+        0, -2, -1, 0, 0,
+        0, -1,  1, 1, 0, 
+        0,  0,  1, 2, 0,
+        0,  0,  0,  0, 0 
+    ],
+    sobel_edge_right: [ // From homework
+        0,  0, 0, 0, 0, 
+        0, -1, 0, 1, 0,
+        0, -2, 0, 2, 0,
+        0, -1, 0, 1, 0,
+        0,  0, 0, 0, 0
+    ], 
+    sobel_edge_top: [ // From homework
+         0,  0,  0,  0, 0, 
+         0,  1,  2,  1, 0, 
+         0,  0,  0,  0, 0, 
+         0, -1, -2, -1, 0, 
+         0,  0,  0,  0, 0
+    ], 
+    sobel_edge_left: [ // From homework
+        0, 0, 0,  0, 0, 
+        0, 1, 0, -1, 0,
+        0, 2, 0, -2, 0,
+        0, 1, 0, -1, 0,
+        0, 0, 0,  0, 0
+    ], 
+    sobel_edge_bottom: [ // From homework
+         0,  0,  0,  0, 0, 
+         0, -1, -2, -1, 0, 
+         0,  0,  0,  0, 0, 
+         0,  1,  2,  1, 0, 
+         0,  0,  0,  0, 0
+    ], 
+    gaussian_blur_5x5_1: [ // 5x5 Gaussian Blur from slides
+        2,  4,  5,  4, 2, 
+        4,  9, 12,  9, 4, 
+        5, 12, 15, 12, 5, 
+        4,  9, 12,  9, 4, 
+        2,  4,  5,  4, 2
+    ], 
+
+    gaussian_blur_5x5_2: [ // traditional 5x5 Gaussian Blur
+        1,  4,  7,  4, 1,
+        4, 16, 26, 16, 4,
+        7, 26, 41, 26, 7, 
+        4, 16, 26, 16, 4, 
+        1,  4,  7,  4, 1
+    ], 
+
+    gaussian_blur_5x5_3: [
+         2,  7,  12,  7,  2,
+         7, 31,  52, 31,  7, 
+        12, 52, 127, 52, 12,
+         7, 31,  52, 31,  7, 
+         2,  7,  12,  7,  2
+    ],
+
+    box_blur_5x5 : [ // 5x5 Low pass filter
+        0.04, 0.04, 0.04, 0.04, 0.04,
+        0.04, 0.04, 0.04, 0.04, 0.04,
+        0.04, 0.04, 0.04, 0.04, 0.04,
+        0.04, 0.04, 0.04, 0.04, 0.04, 
+        0.04, 0.04, 0.04, 0.04, 0.04
+    ],
+
+    unsharpen_1_5x5: [ // 5x5 Hipass filter
+        -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1,
+        -1, -1, 24, -1, -1,
+        -1, -1, -1, -1, -1, 
+        -1, -1, -1, -1, -1,
+    ], 
+
+    laplacian_edge_2_5x5: [
+        -1, -3, -4, -3, -1, 
+        -3,  0,  6,  0, -3, 
+        -4,  6, 20,  6, -4, 
+        -3,  0,  6,  0, -3,
+        -1, -3, -4, -3, -1, 
+
+    ], 
+
+    prewitt_edge_right: [
+        0,  0, 0, 0, 0, 
+        0, -1, 0, 1, 0,
+        0, -1, 0, 1, 0,
+        0, -1, 0, 1, 0,
+        0,  0, 0, 0, 0,
+    ], 
+
+    prewitt_edge_top: [
+        0,  0,  0,  0, 0, 
+        0,  1,  1,  1, 0,
+        0,  0,  0,  0, 0,
+        0, -1, -1, -1, 0,
+        0,  0,  0,  0, 0,
+    ], 
+
+    prewitt_edge_left: [
+        0, 0, 0,  0, 0, 
+        0, 1, 0, -1, 0,
+        0, 1, 0, -1, 0,
+        0, 1, 0, -1, 0,
+        0, 0, 0,  0, 0,
+    ], 
+
+    prewitt_edge_bottom: [
+        0,  0,  0,  0, 0, 
+        0, -1, -1, -1, 0,
+        0,  0,  0,  0, 0,
+        0,  1,  1,  1, 0,
+        0,  0,  0,  0, 0,
+    ], 
+  };
+
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT);                          // Clear viewport with gl.clearColor defined above
 
@@ -564,188 +736,6 @@ function render() {
 
     // Get Uniform locations
     // Set CPU-side variables for all of our shader variables
-
-    // Define several convolution kernels
-    var kernels = {
-        normal: [
-          0, 0, 0, 0, 0, 
-          0, 0, 0, 0, 0,
-          0, 0, 1, 0, 0, 
-          0, 0, 0, 0, 0,
-          0, 0, 0, 0, 0
-        ],
-        boxBlur_3x3: [ // Lowpass filter
-            0,     0,     0,     0, 0,
-            0, 0.111, 0.111, 0.111, 0,
-            0, 0.111, 0.111, 0.111, 0,
-            0, 0.111, 0.111, 0.111, 0,
-            0,     0,     0,     0, 0
-        ],
-        triangleBlur: [ // Gaussian Filter
-            0,      0,     0,      0, 0,
-            0, 0.0625, 0.125, 0.0625, 0,
-            0,  0.125,  0.25,  0.125,  0, 
-            0, 0.0625, 0.125, 0.0625, 0,
-            0,      0,     0,      0, 0
-        ], 
-        laplacian_edge_1: [ //Laplacian Edge 1
-            0,  0,  0,  0, 0,
-            0,  0, -1,  0, 0,
-            0, -1,  4, -1, 0,
-            0,  0, -1,  0, 0, 
-            0,  0,  0,  0, 0
-        ], 
-        sharpenX2: [    // Sharpening from homework
-            0,  0,  0,  0, 0, 
-            0,  0, -2,  0, 0, 
-            0, -2,  9, -2, 0, 
-            0,  0, -2,  0, 0, 
-            0,  0,  0,  0, 0
-        ], 
-        sharpenX8: [    // Sharpening from homework
-            0,  0,  0,  0, 0,
-            0,  0, -8,  0, 0,
-            0, -8, 33, -8, 0, 
-            0,  0, -8,  0, 0,  
-            0,  0,  0,  0, 0
-        ],
-        unsharpen_1_3x3: [ // Unsharpening from homework
-            0,  0,  0,  0, 0, 
-            0, -1, -1, -1, 0, 
-            0, -1,  9, -1, 0,
-            0, -1, -1, -1, 0, 
-            0,  0,  0,  0, 0
-        ], 
-        unsharpen_2: [ // Unsharpening from hoemwork
-            0,  0,  0,  0, 0, 
-            0, -1, -1, -1, 0,
-            0, -1, 16, -1, 0,
-            0, -1, -1, -1, 0, 
-            0,  0,  0,  0, 0
-        ],
-        laplacian_edge_2: [ // High pass filter
-            0,  0,  0,  0, 0,
-            0, -1, -1, -1, 0,
-            0, -1,  8, -1, 0, 
-            0, -1, -1, -1, 0,
-            0,  0,  0,  0, 0 
-        ], 
-        emboss_edge: [ 
-            0,  0,  0,  0, 0,
-            0, -2, -1, 0, 0,
-            0, -1,  1, 1, 0, 
-            0,  0,  1, 2, 0,
-            0,  0,  0,  0, 0 
-        ],
-        sobel_edge_right: [ // From homework
-            0,  0, 0, 0, 0, 
-            0, -1, 0, 1, 0,
-            0, -2, 0, 2, 0,
-            0, -1, 0, 1, 0,
-            0,  0, 0, 0, 0
-        ], 
-        sobel_edge_top: [ // From homework
-             0,  0,  0,  0, 0, 
-             0,  1,  2,  1, 0, 
-             0,  0,  0,  0, 0, 
-             0, -1, -2, -1, 0, 
-             0,  0,  0,  0, 0
-        ], 
-        sobel_edge_left: [ // From homework
-            0, 0, 0,  0, 0, 
-            0, 1, 0, -1, 0,
-            0, 2, 0, -2, 0,
-            0, 1, 0, -1, 0,
-            0, 0, 0,  0, 0
-        ], 
-        sobel_edge_bottom: [ // From homework
-             0,  0,  0,  0, 0, 
-             0, -1, -2, -1, 0, 
-             0,  0,  0,  0, 0, 
-             0,  1,  2,  1, 0, 
-             0,  0,  0,  0, 0
-        ], 
-        gaussian_blur_5x5_1: [ // 5x5 Gaussian Blur from slides
-            2,  4,  5,  4, 2, 
-            4,  9, 12,  9, 4, 
-            5, 12, 15, 12, 5, 
-            4,  9, 12,  9, 4, 
-            2,  4,  5,  4, 2
-        ], 
-
-        gaussian_blur_5x5_2: [ // traditional 5x5 Gaussian Blur
-            1,  4,  7,  4, 1,
-            4, 16, 26, 16, 4,
-            7, 26, 41, 26, 7, 
-            4, 16, 26, 16, 4, 
-            1,  4,  7,  4, 1
-        ], 
-
-        gaussian_blur_5x5_3: [
-             2,  7,  12,  7,  2,
-             7, 31,  52, 31,  7, 
-            12, 52, 127, 52, 12,
-             7, 31,  52, 31,  7, 
-             2,  7,  12,  7,  2
-        ],
-
-        box_blur_5x5 : [ // 5x5 Low pass filter
-            0.04, 0.04, 0.04, 0.04, 0.04,
-            0.04, 0.04, 0.04, 0.04, 0.04,
-            0.04, 0.04, 0.04, 0.04, 0.04,
-            0.04, 0.04, 0.04, 0.04, 0.04, 
-            0.04, 0.04, 0.04, 0.04, 0.04
-        ],
-
-        unsharpen_1_5x5: [ // 5x5 Hipass filter
-            -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1,
-            -1, -1, 24, -1, -1,
-            -1, -1, -1, -1, -1, 
-            -1, -1, -1, -1, -1,
-        ], 
-
-        laplacian_edge_2_5x5: [
-            -1, -3, -4, -3, -1, 
-            -3,  0,  6,  0, -3, 
-            -4,  6, 20,  6, -4, 
-            -3,  0,  6,  0, -3,
-            -1, -3, -4, -3, -1, 
-
-        ], 
-
-        prewitt_edge_right: [
-            0,  0, 0, 0, 0, 
-            0, -1, 0, 1, 0,
-            0, -1, 0, 1, 0,
-            0, -1, 0, 1, 0,
-            0,  0, 0, 0, 0,
-        ], 
-
-        prewitt_edge_top: [
-            0,  0,  0,  0, 0, 
-            0,  1,  1,  1, 0,
-            0,  0,  0,  0, 0,
-            0, -1, -1, -1, 0,
-            0,  0,  0,  0, 0,
-        ], 
-
-        prewitt_edge_left: [
-            0, 0, 0,  0, 0, 
-            0, 1, 0, -1, 0,
-            0, 1, 0, -1, 0,
-            0, 1, 0, -1, 0,
-            0, 0, 0,  0, 0,
-        ], 
-
-        prewitt_edge_bottom: [
-            0,  0,  0,  0, 0, 
-            0, -1, -1, -1, 0,
-            0,  0,  0,  0, 0,
-            0,  1,  1,  1, 0,
-            0,  0,  0,  0, 0,
-        ], 
-      };
 
       var kernelLocation = gl.getUniformLocation(program, "kernel[0]"); 
       gl.uniform1fv(kernelLocation, kernels[filter]);
