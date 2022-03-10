@@ -1,10 +1,8 @@
-//
-// Prof R CG lect 7, Image Processing
-// Edited by Matt Williams
-//
+// Author: Prof R, Edited by Matt Williams
 
 //const cv = require("./opencv");
 
+/** Global Variables */
 var gl; 
 var program; 
 var canvas; 
@@ -33,7 +31,7 @@ var video_dst;
 var cap; 
 var opencv_filter = "normal";
 
-
+/** When our HTML window loads, initialize WebGL */
 window.onload = function init()
 {   
     canvas = document.getElementById("gl-canvas");      // Get HTML Canvas
@@ -108,7 +106,7 @@ window.onload = function init()
     render(); 
 };
 
-
+/** Connect to our webcam. */
 function initVideo(){  
     cap = new cv.VideoCapture(video);
     navigator.mediaDevices.getUserMedia({video:true, audio:false})
@@ -121,6 +119,7 @@ function initVideo(){
         });
 }
 
+/** Reads in input from webcam and performs the chosen algorithm  */
 function processVideo() {
     try{
         if(!is_streaming) {
@@ -194,6 +193,10 @@ document.getElementById("Toggle_Video").onchange = function() {
     }
 };
 
+document.getElementById("fileInput").addEventListener('change', (e) => {
+    image.src = URL.createObjectURL(e.target.files[0]); 
+}, false);
+
 image.onload = function () { 
 
     imageAspect = image.width / image.height; 
@@ -203,6 +206,23 @@ image.onload = function () {
     if(gl){
         configureTexture(image);
     } 
+
+    /* Vertices of two triangles
+    var vertices = [
+        vec2(-2.0 * imageAspect,  2.0), 
+        vec2(-2.0 * imageAspect, -2.0), 
+        vec2( 2.0 * imageAspect, -2.0),
+        vec2(-2.0 * imageAspect,  2.0),
+        vec2( 2.0 * imageAspect,  2.0), 
+        vec2( 2.0 * imageAspect, -2.0)
+    ];
+    
+     bufferId = gl.createBuffer();                                  
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);                           
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);    
+    */
+
+
     if(!is_streaming && cv != null) {
         let src = cv.imread(image); 
         cv.imshow('opencv_output', src); 
@@ -211,13 +231,8 @@ image.onload = function () {
 
 };
 
-document.getElementById("fileInput").addEventListener('change', (e) => {
-    image.src = URL.createObjectURL(e.target.files[0]); 
-}, false);
 
-
-var m = document.getElementById("webgl_menu"); 
-m.addEventListener("click", function() {
+document.getElementById("webgl_menu").addEventListener("click", function() {
     switch(m.selectedIndex) {
         case 0: {
             dimAndKernelWeight[2] = 1.0; 
@@ -524,7 +539,7 @@ function dealWithKeyboard(e) {
     }
 };
 
-
+/** Prepare texture to be used by WebGL */
 function configureTexture(image) {
     texture = gl.createTexture(); 
     gl.bindTexture(gl.TEXTURE_2D, texture); 
@@ -724,6 +739,7 @@ var kernels = {
     ], 
   };
 
+/** Main Function */
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT);                          // Clear viewport with gl.clearColor defined above
 
