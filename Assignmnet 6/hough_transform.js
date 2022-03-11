@@ -23,6 +23,7 @@ var topBound = 2;           // top limit of world coords
 var near = -10;             // near clip plane
 var far = 10;               // far clip plane
 
+//Presentation
 var is_streaming = false; 
 const FPS = 30; 
 var video = document.getElementById('videoInput');  
@@ -107,6 +108,7 @@ window.onload = function init()
 };
 
 /** Connect to our webcam. */
+//Presentation
 function initVideo(){  
     cap = new cv.VideoCapture(video);
     navigator.mediaDevices.getUserMedia({video:true, audio:false})
@@ -117,9 +119,11 @@ function initVideo(){
         .catch(function(err){
             console.log("An error occurred! " + err); 
         });
+
 }
 
 /** Reads in input from webcam and performs the chosen algorithm  */
+//Presentation
 function processVideo() {
     try{
         if(!is_streaming) {
@@ -132,6 +136,8 @@ function processVideo() {
         video_src = cv.Mat.zeros(video.height, video.width, cv.CV_8UC4); 
         video_dst = cv.Mat.zeros(video.height, video.width, cv.CV_8UC1);
         cap.read(video_src); 
+
+        var final_dst = video_src.clone();
 
         switch (opencv_filter) {
             case "normal": {
@@ -152,11 +158,15 @@ function processVideo() {
                 break;
             }
         }
-        cv.imshow('opencv_output', video_dst); 
+
+        cv.cvtColor(video_dst, video_dst, cv.COLOR_GRAY2RGBA)
+        cv.add(final_dst, video_dst, final_dst); 
+        cv.imshow('opencv_output', final_dst);
         // schedule next one
         let delay = 1000/FPS - (Date.now() - begin);
         video_src.delete(); 
         video_dst.delete(); 
+        final_dst.delete();
         setTimeout(processVideo, delay);
     } catch(err) {
         console.log(err);  
@@ -182,20 +192,30 @@ document.getElementById("Toggle_Color").onchange = function() {
     }
 };
 
+//Presentation
 document.getElementById("Toggle_Video").onchange = function() {
     if(event.srcElement.checked == true){
         is_streaming = true; 
         initVideo();
-        setTimeout(processVideo, 0);
+        setTimeout(processVideo, 0); 
     }
     else {
         is_streaming = false; 
+        const stream = video.srcObject;
+        const tracks = stream.getTracks();
+
+        tracks.forEach(function(track) {
+        track.stop();});
+
+        video.srcObject = null; 
     }
 };
 
 document.getElementById("fileInput").addEventListener('change', (e) => {
     image.src = URL.createObjectURL(e.target.files[0]); 
 }, false);
+
+
 
 image.onload = function () { 
 
@@ -217,13 +237,13 @@ image.onload = function () {
         vec2( 2.0 * imageAspect, -2.0)
     ];
     
-     bufferId = gl.createBuffer();                                  
+    bufferId = gl.createBuffer();                                  
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);                           
     gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);    
     */
 
-
-    if(!is_streaming && cv != null) {
+    // Presentation
+    if(!is_streaming && cv != undefined) {
         let src = cv.imread(image); 
         cv.imshow('opencv_output', src); 
         src.delete(); 
@@ -232,7 +252,8 @@ image.onload = function () {
 };
 
 
-document.getElementById("webgl_menu").addEventListener("click", function() {
+var m = document.getElementById("webgl_menu");
+m.addEventListener("click", function() {
     switch(m.selectedIndex) {
         case 0: {
             dimAndKernelWeight[2] = 1.0; 
@@ -366,6 +387,7 @@ document.getElementById("webgl_menu").addEventListener("click", function() {
     }
 });
 
+//Presentation
 var n = document.getElementById("opencv_menu"); 
 n.addEventListener("click", function() {
     switch(n.selectedIndex) {
@@ -390,11 +412,10 @@ n.addEventListener("click", function() {
             break;
         }
     }
-
     cv_update_image(); 
-    
 }); 
 
+//Presentation
 function cv_update_image() {
     if(is_streaming){
         return;  
@@ -436,6 +457,7 @@ function cv_update_image() {
     src.delete(); 
 }
 
+//Presentation
 function open_cv_canny(src, dst) { 
 
     cv.cvtColor(src, src, cv.COLOR_RGB2GRAY, 0); 
@@ -443,11 +465,11 @@ function open_cv_canny(src, dst) {
     return dst; 
 }
 
+//Presentation
 function open_cv_hough_lines(src, dst) {
  
     let lines = new cv.Mat(); 
     let color = new cv.Scalar(200, 200, 200); 
-
     cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0) // B&W
     cv.Canny(src, src, 50, 200, 3); // Edges via gradients
     cv.HoughLinesP(src, lines, 1, Math.PI/180, 2, 0, 0);
@@ -463,6 +485,7 @@ function open_cv_hough_lines(src, dst) {
 
 }
 
+//Presentation
 function open_cv_hough_circles(src, dst) {
 
     let circles = new cv.Mat(); 
@@ -479,7 +502,6 @@ function open_cv_hough_circles(src, dst) {
         cv.circle(dst, center, radius, color); 
 
     }
-
     circles.delete(); 
     return dst; 
 }
