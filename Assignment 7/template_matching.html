@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!--Matt Williams-->
+<html>
+    <script type = "text/javascript">
+        function onOpenCVReady() {
+            document.getElementById('status').innerHTML = "OpenCV.js is ready!"
+        }
+    </script>
+
+    <script async type = "text/javascript" src = "../Common/opencv.js" onload="onOpenCVReady();"></script>
+    <head></head>
+
+
+    <body>
+        <h2>File to Template Match</h2>
+        <div class = "caption">Source Image<input type = "file", id = "fileInput", name = "file"/></div>
+        <img id = "file_image", src = "big smile.png"></img>
+
+
+        <h2>Template to Match</h2>
+        <div class = "caption">Template<input type = "file", id = "templateInput", name = "template"/></div>
+        <img id = "template_image", src = "eye.PNG"></img>
+
+        <div>
+            <p id = "status">OpenCV.js is loading...</p>
+        </div>
+        
+        <div>
+            <input id = "Toggle_Matching" type = "button" value = "Toggle_Matching" />
+            <label for = "Toggle_Matching">Show Template Matching?</label>
+        </div>
+
+        <h2>Template Matching Output</h2>
+        <canvas id = "opencv_output"></canvas>
+    </body>
+    <script type = "text/javascript" src = "../Common/initShaders.js"></script>
+    <script type = "text/javascript" src = "../Common/MVnew.js"></script>
+    <script type = "text/javascript" src = "template_matching.js"></script>
+</html> 
